@@ -16,7 +16,7 @@ class Metric(object):
 
     @staticmethod
     def normalize_labels(labels):
-        if isinstance(labels, frozenset
+        if isinstance(labels, frozenset):
             return labels
         elif labels is None:
             return frozenset()
@@ -30,31 +30,34 @@ class Metric(object):
     @staticmethod
     def format_labels(label_pairs):
         label_pairs = ','.join(["{}=\"{}\"".format(key, value) for key, value in sorted(label_pairs)])
-        if label_pairs
+        if label_pairs:
             label_pairs = '{{{}}}'.format(label_pairs)
         return label_pairs
 
     @staticmethod
     def format_value(value):
-        if value == _INF
+        if value == _INF:
             return '+Inf'
-        elif value == _MINUS_INF
+        elif value == _MINUS_INF:
             return '-Inf'
-        elif math.isnan(value
+        elif math.isnan(value):
             return 'NaN'
-        else
+        else:
             return repr(float(value))
 
-    def render_part(self, name, labels, value
+    def render_part(self, name, labels, value):
         labels = self.format_labels(labels)
         value = self.format_value(value)
-        return '{name}{labels} {value}'.format(name=name, labels=labels, value=value)
+        return'{name}{labels} {value}'.format(name=name, labels=labels, value=value)
 
-def render(self): # pragma: nocover
+
+def render(self):  # pragma: nocover
     raise NotImplementedError('render')
+
 
 class Counter(Metric):
     type_ = 'counter'
+
     def __init__(self, name, labels):
         super(Counter, self).__init__(name, labels)
         self.value = 0
@@ -67,8 +70,10 @@ class Counter(Metric):
     def render(self):
         return self.render_part(self.name, self.labels, self.value)
 
+
 class Gauge(Metric):
     type_ = 'gauge'
+
     def __init__(self, name, labels):
         super(Gauge, self).__init__(name, labels)
         self.value = 0
@@ -85,15 +90,17 @@ class Gauge(Metric):
     def render(self):
         return self.render_part(self.name, self.labels, self.value)
 
+
 class Histogram(Metric):
     type_ = 'histogram'
+
     def __init__(self, name, labels, buckets=_DEFAULT_BUCKETS):
         super(Histogram, self).__init__(name, labels)
         try:
-                assert len(buckets) > 0
-                assert buckets[0] != _INF
+            assert len(buckets) > 0
+            assert buckets[0] != _INF
         except AssertionError:
-                raise ValueError('bad bucket values')
+            raise ValueError('bad bucket values')
 
         buckets = sorted(buckets)
         if buckets[-1] != _INF:
@@ -122,8 +129,10 @@ class Histogram(Metric):
             metrics.append(self.render_part(bucket_name, bucket_labels.union([('le', bucket)]), value))
         return '\n'.join(metrics)
 
+
 class Summary(Metric):
     type_ = 'summary'
+
     def __init__(self, name, labels):
         super(Summary, self).__init__(name, labels)
         self.count = 0
@@ -139,6 +148,7 @@ class Summary(Metric):
             self.render_part(self.name+'_sum', self.labels, self.sum)
         ]
         return '\n'.join(metrics)
+
 
 class MetricFamily(object):
     def __init__(self, klass, name, description, **kwargs):
@@ -177,6 +187,7 @@ class MetricFamily(object):
             results.append(metric_txt)
 
         return '\n'.join(results)
+
 
 class Registry(dict):
     def __init__(self, ttl=None):
